@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLUÇÃO</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(36, 20px);
+            gap: 2px;
+            justify-content: center;
+        }
+        .cell {
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            border: 1px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .solution {
+            background-color: lightgreen !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>SOLUÇÃO</h1>
+    <div class="grid" id="grid"></div>
+    <button onclick="showSolution()">Ç-O-L-U-S-Ã-O</button>
+    <script>
+        const rows = 20;
+        const cols = 36;
+        const words = [
+            "SOLUÇÃO", 
+            "PALAVRA É IGUAL À PALAVRA", 
+            "TRABALHO É IGUAL AO TRABALHO", 
+            "LAVRA É IGUAL À LAVRA", 
+            "SALÁRIO É IGUAL AO SALÁRIO", 
+            "VOLÚVEL É A TRANSFORMAÇÃO", 
+            "NÃO TEM PROBLEMA", 
+            "O POEMA É A Ç-O-L-U-S-Ã-O",
+			   "RAFAEL V MAGALHÃES"
+        ];
+        let grid = Array.from({ length: rows }, () => Array(cols).fill(null));
+        let wordPositions = [];
+        let firstClick = null;
+
+        function placeWords() {
+            words.forEach(word => {
+                let placed = false;
+                while (!placed) {
+                    let row = Math.floor(Math.random() * rows);
+                    let col = Math.floor(Math.random() * (cols - word.replace(/[^A-ZÀ-Úa-zà-ú]/g, '').length));
+                    
+                    if (canPlaceWord(word, row, col)) {
+                        let index = 0;
+                        let positions = [];
+                        for (let i = 0; i < word.length; i++) {
+                            if (word[i] !== ' ') {
+                                grid[row][col + index] = word[i];
+                                positions.push([row, col + index]);
+                                index++;
+                            }
+                        }
+                        wordPositions.push(positions);
+                        placed = true;
+                    }
+                }
+            });
+        }
+        
+        function canPlaceWord(word, row, col) {
+            let index = 0;
+            for (let i = 0; i < word.length; i++) {
+                if (word[i] !== ' ' && grid[row][col + index] !== null) return false;
+                if (word[i] !== ' ') index++;
+            }
+            return true;
+        }
+        
+        function fillGrid() {
+            const gridElement = document.getElementById("grid");
+            gridElement.innerHTML = "";
+            
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (grid[i][j] === null) {
+                        grid[i][j] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                    }
+                    
+                    const cell = document.createElement("div");
+                    cell.classList.add("cell");
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.textContent = grid[i][j];
+                    cell.addEventListener("click", selectCell);
+                    gridElement.appendChild(cell);
+                }
+            }
+        }
+        
+        function selectCell(event) {
+            const cell = event.target;
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+
+            if (firstClick === null) {
+                firstClick = { row, col };
+            } else {
+                let startCol = Math.min(firstClick.col, col);
+                let endCol = Math.max(firstClick.col, col);
+                let allHighlighted = true;
+
+                for (let i = startCol; i <= endCol; i++) {
+                    let currentCell = document.querySelector(`.cell[data-row='${row}'][data-col='${i}']`);
+                    if (currentCell.style.backgroundColor !== "lightblue") {
+                        allHighlighted = false;
+                        break;
+                    }
+                }
+
+                for (let i = startCol; i <= endCol; i++) {
+                    let currentCell = document.querySelector(`.cell[data-row='${row}'][data-col='${i}']`);
+                    currentCell.style.backgroundColor = allHighlighted ? "" : "lightblue";
+                }
+                
+                firstClick = null;
+            }
+        }
+        
+        function showSolution() {
+            document.querySelectorAll(".solution").forEach(cell => cell.classList.remove("solution"));
+            wordPositions.forEach(positions => {
+                positions.forEach(([row, col]) => {
+                    document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`).classList.add("solution");
+                });
+            });
+        }
+        
+        placeWords();
+        fillGrid();
+    </script>
+</body>
+</html>
